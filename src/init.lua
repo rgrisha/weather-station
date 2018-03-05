@@ -1,12 +1,25 @@
 -- load credentials, 'SSID' and 'PASSWORD' declared and initialize in there
 dofile("credentials.lua")
 
+
+function pin_cb()
+	print("Pressed send now, sending ... ")
+  send_measurements()
+end
+
+function measure_now_init()
+  local button_pin = 8 
+  gpio.mode(button_pin, gpio.INT, gpio.PULLUP)
+  gpio.trig(button_pin, "up", pin_cb)
+end
+
 function startup()
     if file.open("init.lua") == nil then
         print("init.lua deleted or renamed")
     else
         print("Running")
         file.close("init.lua")
+        measure_now_init()
         -- the actual application is stored in 'application.lua'
         -- dofile("application.lua")
     end
@@ -31,7 +44,8 @@ wifi_got_ip_event = function(T)
   tmr.create():alarm(3000, tmr.ALARM_SINGLE, startup)
 
   local apitimer = tmr.create()
-  apitimer:register(60000 * 5, tmr.ALARM_AUTO, send_measurements)
+  --apitimer:register(60000 * 5, tmr.ALARM_AUTO, send_measurements)
+  apitimer:register(60000 * 1, tmr.ALARM_AUTO, send_measurements)
   apitimer:start()
 
 end
@@ -135,7 +149,7 @@ function send_measurements(t)
     json = json.."}"
 
     --local url="https://boiling-gorge-17344.herokuapp.com/measurement"
-    local url="http://45.125.66.189/wm/measurement"
+    local url="http://45.125.66.139/api/measurement"
 
     print( "will send json:", json)
 
